@@ -1,5 +1,5 @@
 # TeraScaleFixup
-Lilu plugin for unsupported AMD TeraScale GPUs on macOS - a modern, OpenCore-centric approach (Lilu) to the QE_CI Exotic Patch
+Lilu plugin for unsupported AMD TeraScale GPUs on macOS - a modern, OpenCore-centric approach to the QE_CI Exotic Patch
 
 ## Supported GPUs
 <table>
