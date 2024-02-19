@@ -22,6 +22,10 @@ Modern patches for "exotic" AMD TeraScale GPUs on macOS
             <td></td>
         </tr>
         <tr>
+            <td>HD 4870x2</td>
+            <td>Only 1 GPU chip will be used</td>
+        </tr>
+        <tr>
             <td>HD 4890</td>
             <td></td>
         </tr>
