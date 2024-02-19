@@ -1,5 +1,5 @@
 # TeraScaleFixup
-Patches for unsupported AMD TeraScale GPUs on macOS - a modern, OpenCore-centric approach (Lilu) to the QE_CI Exotic Patch
+Lilu plugin for unsupported AMD TeraScale GPUs on macOS - a modern, OpenCore-centric approach (Lilu) to the QE_CI Exotic Patch
 
 ## Supported GPUs
 <table>
@@ -52,6 +52,8 @@ Patches for unsupported AMD TeraScale GPUs on macOS - a modern, OpenCore-centric
     </tbody>
 </table>
 
+**NOTE:** VGA & DVI->VGA outputs are not natively supported. You must [manually patch the AMD framebuffer](https://www.tonymacx86.com/threads/guide-how-to-patch-amd-framebuffers-for-high-sierra-using-clover.235409/).
+
 ## macOS Compatibility
 All "final release" versions of macOS from 10.7-10.13 are supported. This includes:
 - 10.7.5 (11G63)
@@ -62,4 +64,11 @@ All "final release" versions of macOS from 10.7-10.13 are supported. This includ
 - 10.12.6 (16G2136)
 - 10.13.6 (17G14042)
 
-Newer releases may function by using OpenCore Legacy Patcher.
+**NOTE 1:** Newer releases may function by using OpenCore Legacy Patcher.
+
+**NOTE 2:** Installing this kext on 10.5 or 10.6 should enable acceleration through IOKitPersonalities injection.
+
+## Installation
+- Lilu must be installed alongside this kext for proper functionality; the latest release is recommended.
+- Install TeraScaleFixup.kext alongside Lilu.kext.
+
