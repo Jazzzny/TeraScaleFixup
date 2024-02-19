@@ -53,8 +53,7 @@ Patches for unsupported AMD TeraScale GPUs on macOS - a modern, OpenCore-centric
 </table>
 
 ## macOS Compatibility
-All "final release" versions of macOS from 10.6-10.13 are supported. This includes:
-- 10.6.8 (10K1136)
+All "final release" versions of macOS from 10.7-10.13 are supported. This includes:
 - 10.7.5 (11G63)
 - 10.8.5 (12F2560)
 - 10.9.5 (13F1911)
