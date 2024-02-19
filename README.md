@@ -14,6 +14,18 @@ Patches for unsupported AMD TeraScale GPUs on macOS - a modern, OpenCore-centric
             <td>Notes</td>
         </tr>
         <tr>
+            <td>HD 4350</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>HD 4550</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>HD 4570</td>
+            <td></td>
+        </tr>
+        <tr>
             <td>HD 4650</td>
             <td></td>
         </tr>
