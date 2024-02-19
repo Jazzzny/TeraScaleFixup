@@ -1,5 +1,5 @@
 # TeraScaleFixup
-Modern patches for "exotic" AMD TeraScale GPUs on macOS
+Patches for unsupported AMD TeraScale GPUs on macOS - a modern approach to the QE_CI Exotic Patch
 
 ## Supported GPUs
 <table>
