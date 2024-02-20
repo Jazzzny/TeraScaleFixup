@@ -20,7 +20,7 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>IOKitPersonalities</key>
 	<dict>
-		<key>CryptexFixup</key>
+		<key>TeraScaleFixup</key>
 		<dict>
 			<key>CFBundleIdentifier</key>
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
@@ -33,9 +33,92 @@
 			<key>IOResourceMatch</key>
 			<string>IOKit</string>
 		</dict>
+		<key>4600Controller</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.kext.AMD4600Controller</string>
+			<key>IOClass</key>
+			<string>AMD4600Controller</string>
+			<key>IOMatchCategory</key>
+			<string>IOFramebuffer</string>
+			<key>IOName</key>
+			<string>AMD4600Controller</string>
+			<key>IOPCIMatch</key>
+			<string>0x94901002 0x94881002 0x94981002 0x95401002 0x954F1002 0x95531002</string>
+			<key>IOProbeScore</key>
+			<integer>80000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+		</dict>
+		<key>4600ControllerLegacy</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.kext.ATI4600Controller</string>
+			<key>IOClass</key>
+			<string>ATI4600Controller</string>
+			<key>IOMatchCategory</key>
+			<string>IOFramebuffer</string>
+			<key>IOName</key>
+			<string>ATI4600Controller</string>
+			<key>IOPCIMatch</key>
+			<string>0x94901002 0x94881002 0x94981002 0x95401002 0x954F1002 0x95531002</string>
+			<key>IOProbeScore</key>
+			<integer>80000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+		</dict>
+		<key>4800Controller</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.kext.AMD4800Controller</string>
+			<key>IOClass</key>
+			<string>AMD4800Controller</string>
+			<key>IOMatchCategory</key>
+			<string>IOFramebuffer</string>
+			<key>IOName</key>
+			<string>AMD4800Controller</string>
+			<key>IOPCIMatch</key>
+			<string>0x94401002 0x944a1002 0x94421002 0x94411002 0x94431002 0x944C1002 0x94601002 0x94621002 0x94b31002</string>
+			<key>IOProbeScore</key>
+			<integer>80000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+		</dict>
+		<key>4800ControllerLegacy</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.kext.ATI4800Controller</string>
+			<key>IOClass</key>
+			<string>ATI4800Controller</string>
+			<key>IOMatchCategory</key>
+			<string>IOFramebuffer</string>
+			<key>IOName</key>
+			<string>ATI4800Controller</string>
+			<key>IOPCIMatch</key>
+			<string>0x94401002 0x944a1002 0x94421002 0x94411002 0x94431002 0x944C1002 0x94601002 0x94621002 0x94b31002</string>
+			<key>IOProbeScore</key>
+			<integer>80000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+		</dict>
+		<key>ATIRadeonX2000</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.ATIRadeonX2000</string>
+			<key>IOClass</key>
+			<string>ATIRadeonX2000</string>
+			<key>IOMatchCategory</key>
+			<string>IOAccelerator</string>
+			<key>IOPCIMatch</key>
+			<string>0x94401002 0x944a1002 0x94421002 0x94411002 0x94431002 0x944C1002 0x94601002 0x94621002 0x94901002 0x94881002 0x94981002 0x95531002 0x94b31002</string>
+			<key>IOProbeScore</key>
+			<integer>80000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+		</dict>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright ©2024 Jazzzny</string>
+	<string>Copyright ©2024 Jazzzny. All rights reserved.</string>
 	<key>OSBundleLibraries</key>
 	<dict>
 		<key>as.vit9696.Lilu</key>

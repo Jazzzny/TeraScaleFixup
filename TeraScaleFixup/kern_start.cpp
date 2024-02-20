@@ -1,8 +1,8 @@
 //
 //  kern_start.cpp
-//  CryptexFixup.kext
+//  TeraScaleFixup.kext
 //
-//  Copyright © 2022 Mykola Grymalyuk. All rights reserved.
+//  Copyright ©2024 Jazzzny. All rights reserved.
 //
 
 #include <Headers/plugin_start.hpp>
@@ -10,130 +10,170 @@
 #include <Headers/kern_user.hpp>
 #include <Headers/kern_devinfo.hpp>
 
-#define MODULE_SHORT "crypt_fix"
+#define MODULE_SHORT "TeraScaleFixup"
 
 static mach_vm_address_t orig_cs_validate {};
 static mach_vm_address_t orig_authenticate_root_hash {};
 
-// ramrod is stored inside a larger binary, UpdateBrainLibary
-// When inspecting the RAM Disk, ramrod's path is '/usr/libexec/ramrod/ramrod'
-static const char *ramrodPath = "UpdateBrainLibrary";
+// Patch for 10.7
+static UInt8 findLion[] =    { 0x48, 0x0F, 0xA3, 0xD8, 0x0F, 0x83, 0x24, 0xFF, 0xFF, 0xFF, 0xBF, 0x58 };
+static UInt8 replaceLion[] = { 0x48, 0x0F, 0xA3, 0xD8, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xBF, 0x58 };
 
-static const uint8_t kCryptexFind[] = {
-	// cryptex-system-x86_64
-	0x63, 0x72, 0x79, 0x70, 0x74, 0x65, 0x78, 0x2D,
-	0x73, 0x79, 0x73, 0x74, 0x65, 0x6D, 0x2D,
-	0x78, 0x38, 0x36, 0x5F, 0x36, 0x34
-};
+// Patch for 10.8
+static UInt8 findMountainLion[] =    { 0x0F, 0xA3, 0xCA, 0x0F, 0x83, 0xAE, 0x01, 0x00, 0x00, 0xBF, 0xC8, 0x05 };
+static UInt8 replaceMountainLion[] = { 0x0F, 0xA3, 0xCA, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xBF, 0xC8, 0x05 };
 
-static const uint8_t kCryptexReplace[] = {
-	// cryptex-system-arm64e
-	0x63, 0x72, 0x79, 0x70, 0x74, 0x65, 0x78, 0x2D,
-	0x73, 0x79, 0x73, 0x74, 0x65, 0x6D, 0x2D,
-	0x61, 0x72, 0x6D, 0x36, 0x34, 0x65
-};
+// Patch for 10.9
+static UInt8 findMavericks[] =    { 0x48, 0x0F, 0xA3, 0xC1, 0x0F, 0x83, 0x94, 0x01, 0x00, 0x00, 0xBF, 0x10 };
+static UInt8 replaceMavericks[] = { 0x48, 0x0F, 0xA3, 0xC1, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xBF, 0x10 };
 
-static const char *kextAPFS[] {
-	"/System/Library/Extensions/apfs.kext/Contents/MacOS/apfs"
+// Patch for 10.10
+static UInt8 findYosemite[] =    { 0x04, 0x48, 0x0F, 0xA3, 0xCA, 0x0F, 0x83, 0x9B, 0x01, 0x00, 0x00, 0xBF };
+static UInt8 replaceYosemite[] = { 0x04, 0x48, 0x0F, 0xA3, 0xCA, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xBF };
+
+// Patch for 10.11
+static UInt8 findElCapitan[] =    { 0xFF, 0x83, 0xF9, 0x1A, 0x0F, 0x87, 0x98, 0x01, 0x00, 0x00, 0xBA, 0x45, 0x44, 0x00, 0x04, 0x0F, 0xA3, 0xCA, 0x0F, 0x83, 0x8A, 0x01, 0x00, 0x00 };
+static UInt8 replaceElCapitan[] = { 0xFF, 0x83, 0xF9, 0x3A, 0x0F, 0x87, 0x98, 0x01, 0x00, 0x00, 0xBA, 0x45, 0x44, 0x00, 0x04, 0x0F, 0xA3, 0xCA, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+// Patch for 10.12
+static UInt8 findSierra[] =    { 0x00, 0x01, 0x48, 0x0F, 0xA3, 0xCA, 0x0F, 0x83, 0xA2, 0x00, 0x00, 0x00 };
+static UInt8 replaceSierra[] = { 0x00, 0x01, 0x48, 0x0F, 0xA3, 0xCA, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+
+// Patch for 10.13 (and above)
+static UInt8 findHighSierra[] =    { 0x0F, 0xA3, 0xCA, 0x0F, 0x83, 0xC3, 0x00, 0x00, 0x00, 0xBF, 0x00, 0x06 };
+static UInt8 replaceHighSierra[] = { 0x0F, 0xA3, 0xCA, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xBF, 0x00, 0x06 };
+
+static const char *kextX2000[] {
+	"/System/Library/Extensions/ATIRadeonX2000.kext/Contents/MacOS/ATIRadeonX2000"
 };
 
 static KernelPatcher::KextInfo kextList[] {
-	{"com.apple.filesystems.apfs", kextAPFS, arrsize(kextAPFS), {true}, {}, KernelPatcher::KextInfo::Unloaded },
-};
-
-static const char *kextAuthHashSymbol[] {
-	"_authenticate_root_hash"
+	{"com.apple.ATIRadeonX2000", kextX2000, arrsize(kextX2000), {true}, {}, KernelPatcher::KextInfo::Unloaded },
 };
 
 
 #pragma mark - Kernel patching code
 
-template <size_t findSize, size_t replaceSize>
-static inline void searchAndPatch(const void *haystack, size_t haystackSize, const char *path, const uint8_t (&needle)[findSize], const uint8_t (&patch)[replaceSize], const char *name) {
-	if (UNLIKELY(KernelPatcher::findAndReplace(const_cast<void *>(haystack), haystackSize, needle, findSize, patch, replaceSize))) {
-		DBGLOG(MODULE_SHORT, "found function %s to patch at %s!", name, path);
-	}
-}
-
-static int patched_authenticate_root_hash(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
-	return 0;
-};
-
 static void processKext(KernelPatcher &patcher, size_t index, mach_vm_address_t address, size_t size) {
-	// Check apfs.kext is loaded
+	// Check ATIRadeonX2000 is loaded
 	if (index != kextList[0].loadIndex) {
 		return;
 	}
 
-	// Force '_authenticate_root_hash' to return 0
-	KernelPatcher::RouteRequest request (kextAuthHashSymbol[0], patched_authenticate_root_hash, orig_authenticate_root_hash);
-	if (!patcher.routeMultiple(index, &request, 1, address  , size)) {
-		SYSLOG(MODULE_SHORT, "patcher.routeMultiple for %s failed with error %d", request.symbol, patcher.getError());
+	const KernelPatcher::LookupPatch patchLion = {
+		&kextList[0],
+		findLion,
+		replaceLion,
+		sizeof(findLion),
+		1
+	};
+    
+    const KernelPatcher::LookupPatch patchMountainLion = {
+        &kextList[0],
+        findMountainLion,
+        replaceMountainLion,
+        sizeof(findMountainLion),
+        1
+    };
+    
+    const KernelPatcher::LookupPatch patchMavericks = {
+        &kextList[0],
+        findMavericks,
+        replaceMavericks,
+        sizeof(findMavericks),
+        1
+    };
+    
+    const KernelPatcher::LookupPatch patchYosemite = {
+        &kextList[0],
+        findYosemite,
+        replaceYosemite,
+        sizeof(findYosemite),
+        1
+    };
+    
+    const KernelPatcher::LookupPatch patchElCapitan = {
+        &kextList[0],
+        findElCapitan,
+        replaceElCapitan,
+        sizeof(findElCapitan),
+        1
+    };
+    
+    const KernelPatcher::LookupPatch patchSierra = {
+        &kextList[0],
+        findSierra,
+        replaceSierra,
+        sizeof(findSierra),
+        1
+    };
+    
+    const KernelPatcher::LookupPatch patchHighSierra = {
+        &kextList[0],
+        findHighSierra,
+        replaceHighSierra,
+        sizeof(findHighSierra),
+        1
+    };
+    
+    switch (getKernelVersion()) {
+        case KernelVersion::Lion:
+            patcher.applyLookupPatch(&patchLion);
+            break;
+        case KernelVersion::MountainLion:
+            patcher.applyLookupPatch(&patchMountainLion);
+            break;
+        case KernelVersion::Mavericks:
+            patcher.applyLookupPatch(&patchMavericks);
+            break;
+        case KernelVersion::Yosemite:
+            patcher.applyLookupPatch(&patchYosemite);
+            break;
+        case KernelVersion::ElCapitan:
+            patcher.applyLookupPatch(&patchElCapitan);
+            break;
+        case KernelVersion::Sierra:
+            patcher.applyLookupPatch(&patchSierra);
+            break;
+        case KernelVersion::HighSierra:
+            patcher.applyLookupPatch(&patchHighSierra);
+            break;
+        default: // Assume kexts are installed and functional - no harm is done if they are not present.
+            patcher.applyLookupPatch(&patchHighSierra);
+    }
+    
+	if (patcher.getError() != KernelPatcher::Error::NoError) {
+		SYSLOG(MODULE_SHORT, "Failed to apply ATIRadeonX2000 patch");
 		patcher.clearError();
 	}
+    else {
+        SYSLOG(MODULE_SHORT, "ATIRadeonX2000 patch applied");
+    }
 }
 
-
-#pragma mark - Patched functions
-
-static void patched_cs_validate_page(vnode_t vp, memory_object_t pager, memory_object_offset_t page_offset, const void *data, int *validated_p, int *tainted_p, int *nx_p) {
-	char path[PATH_MAX];
-	int pathlen = PATH_MAX;
-	FunctionCast(patched_cs_validate_page, orig_cs_validate)(vp, pager, page_offset, data, validated_p, tainted_p, nx_p);
-
-	if (vn_getpath(vp, path, &pathlen) == 0) {
-		// Binary is copied into a tmp location, thus partial match
-		if (UNLIKELY(strstr(path, ramrodPath) != NULL)) {
-			searchAndPatch(data, PAGE_SIZE, path, kCryptexFind, kCryptexReplace, "Cryptex Disk Image");
-		}
-	}
-}
 
 #pragma mark - Patches on start/stop
 
 static void pluginStart() {
 	DBGLOG(MODULE_SHORT, "start");
-	if (BaseDeviceInfo::get().cpuHasAvx2) {
-		if (checkKernelArgument("-crypt_force_avx")) {
-			SYSLOG(MODULE_SHORT, "system natively support AVX2.0, but forcing AVX patch upon user request");
-		} else {
-			SYSLOG(MODULE_SHORT, "system natively support AVX2.0, skipping");
-			return;
-		}
-	}
 
-    // Userspace Patcher (ramrod)
-    // Support Big Sur and newer for in-place Install macOS.app usage
-    if (getKernelVersion() >= KernelVersion::BigSur) {
-        lilu.onPatcherLoadForce([](void *user, KernelPatcher &patcher) {
-            KernelPatcher::RouteRequest csRoute = KernelPatcher::RouteRequest("_cs_validate_page", patched_cs_validate_page, orig_cs_validate);
-            if (!patcher.routeMultipleLong(KernelPatcher::KernelID, &csRoute, 1))
-                SYSLOG(MODULE_SHORT, "failed to route cs validation pages");
-        });
-    }
-    
-	// Kernel Space Patcher (APFS.kext)
-    if (getKernelVersion() >= KernelVersion::Ventura) {
-        if (checkKernelArgument("-crypt_allow_hash_validation")) {
-            SYSLOG(MODULE_SHORT, "disabling APFS.kext patching upon user request");
-        } else {
-            lilu.onKextLoadForce(kextList, arrsize(kextList),
-                                 [](void *user, KernelPatcher &patcher, size_t index, mach_vm_address_t address, size_t size) {
-                processKext(patcher, index, address, size);
-            }, nullptr);
-        }
-    }
+	// Kernel Space Patcher
+    lilu.onKextLoadForce(kextList, arrsize(kextList),
+							[](void *user, KernelPatcher &patcher, size_t index, mach_vm_address_t address, size_t size) {
+		processKext(patcher, index, address, size);
+	}, nullptr);
 }
 
 // Boot args.
 static const char *bootargOff[] {
-	"-cryptoff"
+	"-terascaleoff"
 };
 static const char *bootargDebug[] {
-	"-cryptdbg"
+	"-terascaledbg"
 };
 static const char *bootargBeta[] {
-	"-cryptbeta"
+	"-terascalebeta"
 };
 
 // Plugin configuration.
@@ -147,7 +187,7 @@ PluginConfiguration ADDPR(config) {
 	arrsize(bootargDebug),
 	bootargBeta,
 	arrsize(bootargBeta),
-	KernelVersion::BigSur,
+	KernelVersion::Lion,
 	KernelVersion::Sonoma,
 	pluginStart
 };
