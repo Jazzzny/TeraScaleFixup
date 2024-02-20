@@ -427,6 +427,7 @@
 				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Lilu.kext/Contents/Resources";
 				INFOPLIST_FILE = "$(SRCROOT)/TeraScaleFixup/Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Library/x86_64";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				MARKETING_VERSION = 1.0;
 				MODULE_NAME = com.jazzzny.terascalefixup;
 				MODULE_START = "$(PRODUCT_NAME)_kern_start";
@@ -453,6 +454,7 @@
 				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Lilu.kext/Contents/Resources";
 				INFOPLIST_FILE = "$(SRCROOT)/TeraScaleFixup/Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Library/x86_64";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				MARKETING_VERSION = 1.0;
 				MODULE_NAME = com.jazzzny.terascalefixup;
 				MODULE_START = "$(PRODUCT_NAME)_kern_start";
