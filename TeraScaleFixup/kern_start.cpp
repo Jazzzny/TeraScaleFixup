@@ -39,7 +39,6 @@ static UInt8 replaceElCapitan[] = { 0xFF, 0x83, 0xF9, 0x3A, 0x0F, 0x87, 0x98, 0x
 static UInt8 findSierra[] =    { 0x00, 0x01, 0x48, 0x0F, 0xA3, 0xCA, 0x0F, 0x83, 0xA2, 0x00, 0x00, 0x00 };
 static UInt8 replaceSierra[] = { 0x00, 0x01, 0x48, 0x0F, 0xA3, 0xCA, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
-
 // Patch for 10.13 (and above)
 static UInt8 findHighSierra[] =    { 0x0F, 0xA3, 0xCA, 0x0F, 0x83, 0xC3, 0x00, 0x00, 0x00, 0xBF, 0x00, 0x06 };
 static UInt8 replaceHighSierra[] = { 0x0F, 0xA3, 0xCA, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xBF, 0x00, 0x06 };
@@ -52,7 +51,6 @@ static KernelPatcher::KextInfo kextList[] {
 	{"com.apple.ATIRadeonX2000", kextX2000, arrsize(kextX2000), {true}, {}, KernelPatcher::KextInfo::Unloaded },
 };
 
-
 #pragma mark - Kernel patching code
 
 static void processKext(KernelPatcher &patcher, size_t index, mach_vm_address_t address, size_t size) {
@@ -61,97 +59,61 @@ static void processKext(KernelPatcher &patcher, size_t index, mach_vm_address_t 
 		return;
 	}
 
-	const KernelPatcher::LookupPatch patchLion = {
-		&kextList[0],
-		findLion,
-		replaceLion,
-		sizeof(findLion),
-		1
-	};
-    
-    const KernelPatcher::LookupPatch patchMountainLion = {
-        &kextList[0],
-        findMountainLion,
-        replaceMountainLion,
-        sizeof(findMountainLion),
-        1
-    };
-    
-    const KernelPatcher::LookupPatch patchMavericks = {
-        &kextList[0],
-        findMavericks,
-        replaceMavericks,
-        sizeof(findMavericks),
-        1
-    };
-    
-    const KernelPatcher::LookupPatch patchYosemite = {
-        &kextList[0],
-        findYosemite,
-        replaceYosemite,
-        sizeof(findYosemite),
-        1
-    };
-    
-    const KernelPatcher::LookupPatch patchElCapitan = {
-        &kextList[0],
-        findElCapitan,
-        replaceElCapitan,
-        sizeof(findElCapitan),
-        1
-    };
-    
-    const KernelPatcher::LookupPatch patchSierra = {
-        &kextList[0],
-        findSierra,
-        replaceSierra,
-        sizeof(findSierra),
-        1
-    };
-    
-    const KernelPatcher::LookupPatch patchHighSierra = {
-        &kextList[0],
-        findHighSierra,
-        replaceHighSierra,
-        sizeof(findHighSierra),
-        1
-    };
+    const UInt8 *genericFind;
+    const UInt8 *genericReplace;
     
     switch (getKernelVersion()) {
         case KernelVersion::Lion:
-            patcher.applyLookupPatch(&patchLion);
+            genericFind = findLion;
+            genericReplace = replaceLion;
             break;
         case KernelVersion::MountainLion:
-            patcher.applyLookupPatch(&patchMountainLion);
+            genericFind = findMountainLion;
+            genericReplace = replaceMountainLion;
             break;
         case KernelVersion::Mavericks:
-            patcher.applyLookupPatch(&patchMavericks);
+            genericFind = findMavericks;
+            genericReplace = replaceMavericks;
             break;
         case KernelVersion::Yosemite:
-            patcher.applyLookupPatch(&patchYosemite);
+            genericFind = findYosemite;
+            genericReplace = replaceYosemite;
             break;
         case KernelVersion::ElCapitan:
-            patcher.applyLookupPatch(&patchElCapitan);
+            genericFind = findElCapitan;
+            genericReplace = replaceElCapitan;
             break;
         case KernelVersion::Sierra:
-            patcher.applyLookupPatch(&patchSierra);
+            genericFind = findSierra;
+            genericReplace = replaceSierra;
             break;
         case KernelVersion::HighSierra:
-            patcher.applyLookupPatch(&patchHighSierra);
+            genericFind = findHighSierra;
+            genericReplace = replaceHighSierra;
             break;
         default: // Assume kexts are installed and functional - no harm is done if they are not present.
-            patcher.applyLookupPatch(&patchHighSierra);
+            genericFind = findHighSierra;
+            genericReplace = replaceHighSierra;
     }
     
-	if (patcher.getError() != KernelPatcher::Error::NoError) {
-		SYSLOG(MODULE_SHORT, "Failed to apply ATIRadeonX2000 patch");
-		patcher.clearError();
-	}
+    // Apply patch
+    const KernelPatcher::LookupPatch patchGeneric = {
+            &kextList[0],
+            genericFind,
+            genericReplace,
+            sizeof(genericFind),
+            1
+        };
+    patcher.applyLookupPatch(&patchGeneric);
+    
+    if (patcher.getError() != KernelPatcher::Error::NoError) {
+        SYSLOG(MODULE_SHORT, "Failed to apply ATIRadeonX2000 patch");
+        patcher.clearError();
+    }
     else {
         SYSLOG(MODULE_SHORT, "ATIRadeonX2000 patch applied");
     }
 }
-
 
 #pragma mark - Patches on start/stop
 
