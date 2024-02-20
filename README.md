@@ -70,5 +70,3 @@ All "final release" versions of macOS from 10.7-10.13 are supported. This includ
 
 ## Installation
 - Lilu must be installed alongside this kext for proper functionality; the latest release is recommended.
-- Install TeraScaleFixup.kext alongside Lilu.kext.
-
