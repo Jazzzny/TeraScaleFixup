@@ -61,51 +61,60 @@ static void processKext(KernelPatcher &patcher, size_t index, mach_vm_address_t 
 
     const UInt8 *genericFind;
     const UInt8 *genericReplace;
-    
+    size_t patchSize = 0;
+
     switch (getKernelVersion()) {
         case KernelVersion::Lion:
             genericFind = findLion;
             genericReplace = replaceLion;
+            patchSize = sizeof(findLion);
             break;
         case KernelVersion::MountainLion:
             genericFind = findMountainLion;
             genericReplace = replaceMountainLion;
+            patchSize = sizeof(findMountainLion);
             break;
         case KernelVersion::Mavericks:
             genericFind = findMavericks;
             genericReplace = replaceMavericks;
+            patchSize = sizeof(findMavericks);
             break;
         case KernelVersion::Yosemite:
             genericFind = findYosemite;
             genericReplace = replaceYosemite;
+            patchSize = sizeof(findYosemite);
             break;
         case KernelVersion::ElCapitan:
             genericFind = findElCapitan;
             genericReplace = replaceElCapitan;
+            patchSize = sizeof(findElCapitan);
             break;
         case KernelVersion::Sierra:
             genericFind = findSierra;
             genericReplace = replaceSierra;
+            patchSize = sizeof(findSierra);
             break;
         case KernelVersion::HighSierra:
             genericFind = findHighSierra;
             genericReplace = replaceHighSierra;
+            patchSize = sizeof(findHighSierra);
             break;
         default: // Assume kexts are installed and functional - no harm is done if they are not present.
             genericFind = findHighSierra;
             genericReplace = replaceHighSierra;
+            patchSize = sizeof(findHighSierra);
     }
-    
+
     // Apply patch
     const KernelPatcher::LookupPatch patchGeneric = {
             &kextList[0],
             genericFind,
             genericReplace,
-            sizeof(genericFind),
+            patchSize,
             1
         };
     patcher.applyLookupPatch(&patchGeneric);
-    
+
     if (patcher.getError() != KernelPatcher::Error::NoError) {
         SYSLOG(MODULE_SHORT, "Failed to apply ATIRadeonX2000 patch");
         patcher.clearError();
